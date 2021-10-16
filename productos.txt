@@ -1,0 +1,8 @@
+[
+  {
+    "title": "remera",
+    "price": "100",
+    "thumbnail": "",
+    "id": 1
+  }
+]
