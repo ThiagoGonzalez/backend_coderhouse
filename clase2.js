@@ -122,9 +122,9 @@ const db = new Contenedor('./productos.txt');
 
 const test = async() => {
     console.log(await db.getAll());
-    //console.log(await db.save({title: 'remera', price: '100', thumbnail: ''}));
-    //console.log(await db.save({title: 'pantalon', price: '200', thumbnail: ''}));
-    //console.log(await db.save({title: 'zapatos', price: '300', thumbnail: ''}));
+    console.log(await db.save({title: 'remera', price: '100', thumbnail: ''}));
+    console.log(await db.save({title: 'pantalon', price: '200', thumbnail: ''}));
+    console.log(await db.save({title: 'zapatos', price: '300', thumbnail: ''}));
     //console.log('Get element by ID: '+JSON.stringify(await test.getById(1)));
     //console.log(await test.getAll());
     //await test.deleteById(2);
