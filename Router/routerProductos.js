@@ -1,12 +1,7 @@
-//>> Consigna: Implementar programa que contenga una clase llamada Contenedor que reciba el nombre del archivo con el que va a trabajar e implemente los siguientes métodos:
+import { Router } from 'express'
+import fs from 'fs'
 
-//save(Object): Number - Recibe un objeto, lo guarda en el archivo, devuelve el id asignado.
-//getById(Number): Object - Recibe un id y devuelve el objeto con ese id, o null si no está.
-//getAll(): Object[] - Devuelve un array con los objetos presentes en el archivo.
-//deleteById(Number): void - Elimina del archivo el objeto con el id buscado.
-//deleteAll(): void - Elimina todos los objetos presentes en el archivo.
-
-const fs = require('fs')
+const router = Router();
 
 class Contenedor {
     constructor(nombreArchivo){
@@ -28,8 +23,8 @@ class Contenedor {
     } 
 
     async save(producto){
-        const valores = await this.getAll();
-        const id = 1;
+        let valores = await this.getAll();
+        let id = 1;
         if(!valores){
             valores = [];
         }
@@ -116,22 +111,76 @@ class Contenedor {
         }
     }
 
+    async modifyProduct(producto){
+        let valores = await this.getAll()
+        let index = await this.findIndex(producto.id)
+        valores[index] = producto
+        let resultado = await this.saveValues(valores)
+        return resultado
+    }
+
 }
 
-const db = new Contenedor('./productos.txt');
+router.get('/productos', async (req, res) => {
+    const valores = await db.getAll()
+    res.send(valores)
+})
 
-const test = async() => {
-    console.log(await db.getAll());
-    console.log(await db.save({title: 'remera', price: '100', thumbnail: ''}));
-    console.log(await db.save({title: 'pantalon', price: '200', thumbnail: ''}));
-    console.log(await db.save({title: 'zapatos', price: '300', thumbnail: ''}));
-    //console.log('Get element by ID: '+JSON.stringify(await test.getById(1)));
-    //console.log(await test.getAll());
-    //await test.deleteById(2);
-    //console.log(await test.getAll());
-    //await test.deleteAll();
-}
+router.get('/productos/:id', async (req, res) => {
+    let {id} = req.params
+    id = Number(id)
+    const resultado = await db.getById(id)
+    
+    if(!resultado){
+        return res.json({error: 'producto no encontrado'})
+    }
+    else{
+        return res.json(resultado)
+    }
+})
 
-test();
+router.get('/productoRandom', async (req, res) => {
+    const valores = await db.getAll()
+    const random = valores[Math.floor(Math.random() * valores.length)]
+    res.send(random)
+})
+
+router.post('/productos', async (req, res) => {
+    let {nombre, precio, imagen} = req.body
+    let id = await db.save({nombre, precio, imagen})
+    res.status(200).json(nombre, precio, imagen, id)
+})
+
+router.put('/productos/:id', async (req, res) => {
+    let {nombre, precio, imagen} = req.body
+    let {id} = req.params
+    let nuevoProducto = await db.getById(Number(id))
+    nuevoProducto["nombre"] = nombre
+    nuevoProducto["precio"] = precio
+    nuevoProducto["imagen"] = imagen
+    let result = await db.modifyProduct(nuevoProducto)
+    if(result){
+        res.status(200).json(`Se modifico el producto con id ${id} exitosamente`)
+    }
+    else{
+        res.status(200).json(`error`)
+    }
+    
+
+})
+
+router.delete('/productos/:id', async (req, res) =>{
+    let {id} = req.params
+    let result = await db.deleteByID(Number(id))
+    if(result){
+        res.status(200).json(`Se elimino el producto con id ${id} exitosamente`)
+    }
+    else{
+        res.status(200).json('Error al eliminar el producto.')
+    }
+})
 
 
+const db = new Contenedor('./productos.txt')
+
+export const routerProductos = router
